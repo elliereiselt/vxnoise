@@ -11,7 +11,39 @@
 
 namespace vx {
     template<typename T>
+    class aligned_array_2d;
+
+    template<typename T>
+    struct _const_aligned_array_2d_indexer {
+        const aligned_array_2d<T>& _array_2d;
+        size_t _offsetX;
+
+        _const_aligned_array_2d_indexer(const aligned_array_2d<T>& array_2d, size_t offsetX)
+                : _array_2d(array_2d), _offsetX(offsetX) {}
+
+        T operator[](size_t y) const {
+            return _array_2d._data[y + _offsetX];
+        }
+    };
+
+    template<typename T>
+    struct _aligned_array_2d_indexer {
+        aligned_array_2d<T>& _array_2d;
+        size_t _offsetX;
+
+        _aligned_array_2d_indexer(aligned_array_2d<T>& array_2d, size_t offsetX)
+                : _array_2d(array_2d), _offsetX(offsetX) {}
+
+        T &operator[](size_t y) {
+            return _array_2d._data[y + _offsetX];
+        }
+    };
+
+    template<typename T>
     class aligned_array_2d {
+        friend _aligned_array_2d_indexer<T>;
+        friend _const_aligned_array_2d_indexer<T>;
+
     public:
         // Make this class only movable
         // TODO: Give developers the option to handle this however they want. If they want to shoot themself in the foot by copying megabytes of data every assignment let them.
@@ -105,6 +137,14 @@ namespace vx {
 
             // Is this correct?
             return _data[y + (_sizeY * x)];
+        }
+
+        const _const_aligned_array_2d_indexer<T> operator[](size_t x) const {
+            return _const_aligned_array_2d_indexer<T>(*this, _sizeY * x);
+        }
+
+        _aligned_array_2d_indexer<T> operator[](size_t x) {
+            return _aligned_array_2d_indexer<T>(*this, _sizeY * x);
         }
 
         T* ptr() {

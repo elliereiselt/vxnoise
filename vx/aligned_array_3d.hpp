@@ -11,7 +11,67 @@
 
 namespace vx {
     template<typename T>
+    class aligned_array_3d;
+
+    template<typename T>
+    struct _const_aligned_array_3d_indexer_offsetY {
+        const aligned_array_3d<T>& _array_2d;
+        size_t _offsetY;
+
+        _const_aligned_array_3d_indexer_offsetY(const aligned_array_3d<T>& array_2d, size_t offsetY)
+                : _array_2d(array_2d), _offsetY(offsetY) {}
+
+        T operator[](size_t z) const {
+            return _array_2d._data[z + _offsetY];
+        }
+    };
+
+    template<typename T>
+    struct _const_aligned_array_3d_indexer_offsetX {
+        const aligned_array_3d<T>& _array_2d;
+        size_t _offsetX;
+
+        _const_aligned_array_3d_indexer_offsetX(const aligned_array_3d<T>& array_2d, size_t offsetX)
+                : _array_2d(array_2d), _offsetX(offsetX) {}
+
+        const _const_aligned_array_3d_indexer_offsetY<T> operator[](size_t y) const {
+            return _const_aligned_array_3d_indexer_offsetY<T>(_array_2d, _array_2d._sizeZ * (y + _offsetX));
+        }
+    };
+
+    template<typename T>
+    struct _aligned_array_3d_indexer_offsetY {
+        aligned_array_3d<T>& _array_2d;
+        size_t _offsetY;
+
+        _aligned_array_3d_indexer_offsetY(aligned_array_3d<T>& array_2d, size_t offsetY)
+                : _array_2d(array_2d), _offsetY(offsetY) {}
+
+        T &operator[](size_t z) {
+            return _array_2d._data[z + _offsetY];
+        }
+    };
+
+    template<typename T>
+    struct _aligned_array_3d_indexer_offsetX {
+        aligned_array_3d<T>& _array_2d;
+        size_t _offsetX;
+
+        _aligned_array_3d_indexer_offsetX(aligned_array_3d<T>& array_2d, size_t offsetX)
+                : _array_2d(array_2d), _offsetX(offsetX) {}
+
+        _aligned_array_3d_indexer_offsetY<T> operator[](size_t y) {
+            return _aligned_array_3d_indexer_offsetY<T>(_array_2d, _array_2d._sizeZ * (y + _offsetX));
+        }
+    };
+
+    template<typename T>
     class aligned_array_3d {
+        friend _aligned_array_3d_indexer_offsetX<T>;
+        friend _aligned_array_3d_indexer_offsetY<T>;
+        friend _const_aligned_array_3d_indexer_offsetX<T>;
+        friend _const_aligned_array_3d_indexer_offsetY<T>;
+
     public:
         // Make this class only movable
         // TODO: Give developers the option to handle this however they want. If they want to shoot themself in the foot by copying megabytes of data every assignment let them.
@@ -113,6 +173,14 @@ namespace vx {
 
             // Is this correct?
             return _data[z + _sizeZ * (y + (_sizeY * x))];
+        }
+
+        const _const_aligned_array_3d_indexer_offsetX<T> operator[](size_t x) const {
+            return _const_aligned_array_3d_indexer_offsetX<T>(*this, _sizeY * x);
+        }
+
+        _aligned_array_3d_indexer_offsetX<T> operator[](size_t x) {
+            return _aligned_array_3d_indexer_offsetX<T>(*this, _sizeY * x);
         }
 
         T* ptr() {
