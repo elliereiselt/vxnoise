@@ -7,6 +7,10 @@ if(MSVC)
     set_property(SOURCE vx/noise/impl/CellularAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
     set_property(SOURCE vx/noise/impl/SimplexAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
     set_property(SOURCE vx/noise/impl/SimplexFractalAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
+else()
+    set_property(SOURCE vx/noise/impl/CellularAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
+    set_property(SOURCE vx/noise/impl/SimplexAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
+    set_property(SOURCE vx/noise/impl/SimplexFractalAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
 endif()
 
 add_library(vxnoise SHARED
