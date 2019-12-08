@@ -35,10 +35,7 @@ namespace vx {
             __m256 _avx2Lacunarity;
 
             SimplexFractalAVX2(int seed, float defaultScale, std::uint32_t octaves, float persistence,
-                               float lacunarity)
-                    : SimplexFractal(seed, defaultScale, octaves, persistence, lacunarity),
-                      NoiseAVX2(seed, defaultScale), _avx2Persistence(_mm256_set1_ps(persistence)),
-                      _avx2Lacunarity(_mm256_set1_ps(lacunarity)) {}
+                               float lacunarity);
 
         };
     }

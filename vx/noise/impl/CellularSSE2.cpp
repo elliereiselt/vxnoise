@@ -1,6 +1,7 @@
 // SSE2
 #include "../../simd/sse2.hpp"
 #include "CellularSSE2.hpp"
+#include <limits>
 
 static __m128 VX_VECTORCALL hashCellX(__m128i seed, __m128 cellX, __m128 cellY) {
     __m128 rx = vx::simd::sse2::dot_ps(cellX, cellY, _mm_set1_ps(127.1f), _mm_set1_ps(311.7f));

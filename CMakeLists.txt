@@ -5,12 +5,21 @@ set(CMAKE_CXX_STANDARD 11)
 
 if(MSVC)
     set_property(SOURCE vx/noise/impl/CellularAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
+    set_property(SOURCE vx/noise/simd/NoiseAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
     set_property(SOURCE vx/noise/impl/SimplexAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
     set_property(SOURCE vx/noise/impl/SimplexFractalAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "/arch:AVX")
 else()
-    set_property(SOURCE vx/noise/impl/CellularAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
-    set_property(SOURCE vx/noise/impl/SimplexAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
-    set_property(SOURCE vx/noise/impl/SimplexFractalAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-march=core-avx2")
+    set_property(SOURCE vx/noise/impl/CellularAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-mavx -mavx2")
+    set_property(SOURCE vx/noise/simd/NoiseAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-mavx -mavx2")
+    set_property(SOURCE vx/noise/impl/SimplexAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-mavx -mavx2")
+    set_property(SOURCE vx/noise/impl/SimplexFractalAVX2.cpp APPEND PROPERTY COMPILE_FLAGS "-mavx -mavx2")
+
+    set_property(SOURCE vx/noise/impl/SimplexSSE42.cpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
+    set_property(SOURCE vx/noise/impl/SimplexSSE42.hpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
+    set_property(SOURCE vx/noise/impl/SimplexFractalSSE42.cpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
+    set_property(SOURCE vx/noise/impl/SimplexFractalSSE42.hpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
+    set_property(SOURCE vx/noise/impl/CellularSSE42.cpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
+    set_property(SOURCE vx/noise/impl/CellularSSE42.hpp APPEND PROPERTY COMPILE_FLAGS "-msse4.1")
 endif()
 
 add_library(vxnoise SHARED
@@ -31,6 +40,7 @@ add_library(vxnoise SHARED
         vx/noise/SimplexFractal.hpp
         vx/noise/Cellular.cpp
         vx/noise/Cellular.hpp
+        vx/noise/simd/NoiseAVX2.cpp
         vx/noise/simd/NoiseAVX2.hpp
         vx/noise/simd/NoiseSSE2.hpp
         vx/noise/simd/NoiseSSE42.hpp

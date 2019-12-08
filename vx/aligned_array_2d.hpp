@@ -13,6 +13,7 @@ namespace vx {
     template<typename T>
     class aligned_array_2d;
 
+    // Hidden indexer, NOT meant to be used explicitly
     template<typename T>
     struct _const_aligned_array_2d_indexer {
         const aligned_array_2d<T>& _array_2d;
@@ -22,10 +23,15 @@ namespace vx {
                 : _array_2d(array_2d), _offsetX(offsetX) {}
 
         T operator[](size_t y) const {
+            if (y >= _array_2d._sizeY) {
+                throw std::runtime_error("Out of range index passed to aligned_array_2d!");
+            }
+
             return _array_2d._data[y + _offsetX];
         }
     };
 
+    // Hidden indexer, NOT meant to be used explicitly
     template<typename T>
     struct _aligned_array_2d_indexer {
         aligned_array_2d<T>& _array_2d;
@@ -35,10 +41,19 @@ namespace vx {
                 : _array_2d(array_2d), _offsetX(offsetX) {}
 
         T &operator[](size_t y) {
+            if (y >= _array_2d._sizeY) {
+                throw std::runtime_error("Out of range index passed to aligned_array_2d!");
+            }
+
             return _array_2d._data[y + _offsetX];
         }
     };
 
+    /**
+     * Basic 2D array of type `T` that is properly aligned for each SIMD level
+     *
+     * @tparam T Index Type
+     */
     template<typename T>
     class aligned_array_2d {
         friend _aligned_array_2d_indexer<T>;
@@ -46,7 +61,7 @@ namespace vx {
 
     public:
         // Make this class only movable
-        // TODO: Give developers the option to handle this however they want. If they want to shoot themself in the foot by copying megabytes of data every assignment let them.
+        // TODO: Give the ability to copy the aligned_array_2d
         aligned_array_2d(aligned_array_2d const &) = delete;
         aligned_array_2d &operator=(aligned_array_2d const &) = delete;
         aligned_array_2d &operator=(aligned_array_2d &&other) noexcept {
@@ -58,21 +73,22 @@ namespace vx {
 
             // Zero out 'other' so our data isn't freed by accident
             other._data = nullptr;
-            // Sorry I like doing weird syntax sometimes. This just sets everything to 0 if that's not easy to understand.
-            other._alignment =
-            other._sizeX =
+            other._alignment = 0;
+            other._sizeX = 0;
             other._sizeY = 0;
 
             return *this;
         }
 
-        explicit aligned_array_2d(std::size_t size, std::size_t alignment)
+        aligned_array_2d(std::size_t size, std::size_t alignment)
                 : aligned_array_2d(size, size, alignment) {}
 
         aligned_array_2d(std::size_t sizeX, std::size_t sizeY, std::size_t alignment)
                 : _sizeX(sizeX), _sizeY(sizeY), _data(nullptr), _alignment(alignment) {
             // None of the sizes can be zero else data will be null
             if (!(_sizeX == 0 || _sizeY == 0)) {
+                // Allocate the underlying array using `_mm_malloc` which will properly align the pointer to how
+                // the SIMD backend expects
                 _data = static_cast<T*>(_mm_malloc(_sizeX * _sizeY * sizeof(T), _alignment));
             }
         }
@@ -87,12 +103,12 @@ namespace vx {
 
             // Zero out 'other' so our data isn't freed by accident
             other._data = nullptr;
-            // Sorry I like doing weird syntax sometimes. This just sets everything to 0 if that's not easy to understand.
-            other._alignment =
-            other._sizeX =
+            other._alignment = 0;
+            other._sizeX = 0;
             other._sizeY = 0;
         }
 
+        /// Check if the array has any data
         bool isEmpty() const {
             return !_data;
         }
@@ -109,44 +125,51 @@ namespace vx {
             }
         }
 
+        /// Access data at an exact 2d position
         T operator[](std::tuple<std::size_t, std::size_t> index) const {
             std::size_t x = std::get<0>(index),
                     y = std::get<1>(index);
 
-            // TODO: Consider only enabling this during debug
             if (isEmpty()) throw std::runtime_error("aligned_array_2d is empty!");
-            if (x < 0 || y < 0 || x >= _sizeX || y >= _sizeY) {
-                std::cerr << "Error Position: [" << x << ", " << y << "]" << std::endl;
+            if (x >= _sizeX || y >= _sizeY) {
                 throw std::runtime_error("Out of range index passed to aligned_array_2d!");
             }
 
-            // Is this correct?
             return _data[y + (_sizeY * x)];
         }
 
+        /// Access data at an exact 2d position with mutable access
         T &operator[](std::tuple<std::size_t, std::size_t> index) {
             std::size_t x = std::get<0>(index),
                     y = std::get<1>(index);
 
-            // TODO: Consider only enabling this during debug
             if (isEmpty()) throw std::runtime_error("aligned_array_2d is empty!");
-            if (x < 0 || y < 0 || x >= _sizeX || y >= _sizeY) {
-                std::cerr << "Error Position: [" << x << ", " << y << "]" << std::endl;
+            if (x >= _sizeX || y >= _sizeY) {
                 throw std::runtime_error("Out of range index passed to aligned_array_2d!");
             }
 
-            // Is this correct?
             return _data[y + (_sizeY * x)];
         }
 
-        const _const_aligned_array_2d_indexer<T> operator[](size_t x) const {
+        /// Access the first dimension of the 2d array
+        _const_aligned_array_2d_indexer<T> operator[](size_t x) const {
+            if (x >= _sizeX) {
+                throw std::runtime_error("Out of range index passed to aligned_array_2d!");
+            }
+
             return _const_aligned_array_2d_indexer<T>(*this, _sizeY * x);
         }
 
+        /// Access the first dimension of the 2d array with mutable access
         _aligned_array_2d_indexer<T> operator[](size_t x) {
+            if (x >= _sizeX) {
+                throw std::runtime_error("Out of range index passed to aligned_array_2d!");
+            }
+
             return _aligned_array_2d_indexer<T>(*this, _sizeY * x);
         }
 
+        /// Get the 2d array as a flat pointer
         T* ptr() {
             return _data;
         }

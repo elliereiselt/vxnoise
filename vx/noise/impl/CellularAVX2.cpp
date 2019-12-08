@@ -9,6 +9,7 @@
 // AVX2
 #include "../../simd/avx2.hpp"
 #include "CellularAVX2.hpp"
+#include <limits>
 
 static __m256 VX_VECTORCALL hashCellX(__m256i seed, __m256 cellX, __m256 cellY) {
     __m256 rx = vx::simd::avx2::dot_ps(cellX, cellY, _mm256_set1_ps(127.1f), _mm256_set1_ps(311.7f));

@@ -6,6 +6,7 @@
 namespace vx {
     namespace simd {
         namespace none {
+            /// Calculate fast floor
             inline int floor(float a) {
                 if (a > 0) {
                     return static_cast<int>(a);
@@ -14,15 +15,25 @@ namespace vx {
                 }
             }
 
+            /// Calculate dot product
             inline float dot(float x0, float y0, float x1, float y1) {
                 return (x0 * x1) + (y0 * y1);
             }
 
+            /// Calculate dot product
             inline float dot(float x0, float y0, float z0, float x1, float y1, float z1) {
                 return (x0 * x1) + (y0 * y1) + (z0 * z1);
             }
 
-            // CREDIT: https://arxiv.org/pdf/1903.12270.pdf
+            /**
+             * Generate partial Jenkins hash
+             *
+             * CREDIT: https://arxiv.org/pdf/1903.12270.pdf
+             *
+             * @param seed
+             * @param key
+             * @return
+             */
             inline int partialJenkinsHash(int seed, int key) {
                 int hash = seed;
                 hash += key;

@@ -22,8 +22,7 @@ namespace vx {
             alignas(32) __m256i _avx2Seed;
             alignas(32) __m256 _avx2DefaultScale;
 
-            explicit NoiseAVX2(int seed, float defaultScale)
-                    : _avx2Seed(_mm256_set1_epi32(seed)), _avx2DefaultScale(_mm256_set1_ps(defaultScale)) {}
+            NoiseAVX2(int seed, float defaultScale);
 
         };
     }

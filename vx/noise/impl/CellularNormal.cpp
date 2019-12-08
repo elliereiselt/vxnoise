@@ -1,4 +1,5 @@
 #include <limits>
+#include <cmath>
 #include "../../simd/none.hpp"
 #include "CellularNormal.hpp"
 
@@ -123,10 +124,6 @@ float vx::noise::CellularNormal::get3d(float x, float y, float z, float scale) {
                 }
             }
         }
-    }
-
-    if (z == 22) {
-        z = 22;
     }
 
     return _noiseLookup->get3d(resultX, resultY, resultZ);

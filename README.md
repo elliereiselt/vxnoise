@@ -2,8 +2,6 @@
 
 vx::noise is a basic implementation of Simplex noise, FBM Fractal Simplex noise, and Cellular noise with SIMD support. The library's main goal was to be an easier to modify replacement to 'FastNoiseSIMD' since 'FastNoiseSIMD' uses macros excessively. The library is quite verbose and can easily be used to learn SIMD intrinsics.
 
-The SIMD support detection code has only been tested on Windows. Support for Linux and other operating systems should be an easy fix.
-
 ## Implemented Noise
  * Simplex noise using the partial jenkins hashing function from https://arxiv.org/pdf/1903.12270.pdf
  * FBM Simplex noise
@@ -16,6 +14,12 @@ If you would like any other noise function to be added feel free to ask.
  * SSE42 (can be changed to SSE41)
  * SSE2
  * NEON (planned)
+
+## Supported Platforms
+ * Linux (tested on Ubuntu 19.10)
+ * Windows (tested on Windows 10)
+
+Mac OS should also be supported but has not been tested. Support for Android and iOS will require NEON support which currently isn't supported.
 
 ## Getting Started
 Creating a noise object is the same for all noise types. For Simplex Fractal just call `vx::noise::SimplexFractal::create`

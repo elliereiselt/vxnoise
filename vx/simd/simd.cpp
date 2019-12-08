@@ -1,11 +1,17 @@
+#include <cstdint>
+#include <cpuid.h>
 #include "simd.hpp"
 
 // Based on https://gist.github.com/hi2p-perim/7855506
 #ifdef _MSC_VER
 #include <intrin.h>
+
+void get_cpuid(int32_t out[4], int32_t x) {
+    __cpuid(out, x);
+}
 #else // TODO: Does this work on MAC and iOS?
-void __cpuid(int32_t out[4], int32_t x) {
-	__cpuid_count(x, 0, out[0], out[1], out[2], out[3]);
+void get_cpuid(int32_t out[4], int32_t x) {
+    __cpuid_count(x, 0, out[0], out[1], out[2], out[3]);
 }
 
 unsigned long long _xgetbv(unsigned int index) {
@@ -21,14 +27,14 @@ unsigned long long _xgetbv(unsigned int index) {
 
 vx::simd::simd_level vx::simd::getFastestSupportedLevel() {
     int cpuInfo[4];
-    __cpuid(cpuInfo, 0);
+    get_cpuid(cpuInfo, 0);
     int funcNums = cpuInfo[0];
 
     if (funcNums < 1) {
         return vx::simd::simd_level::Fallback;
     }
 
-    __cpuid(cpuInfo, 1);
+    get_cpuid(cpuInfo, 1);
 
     // If SSE2 isn't supported then use Fallback...
     if ((cpuInfo[3] & (1 << 25)) == 0) {
@@ -59,7 +65,7 @@ vx::simd::simd_level vx::simd::getFastestSupportedLevel() {
     // FMA3
     bool fma3Support = (cpuInfo[2] & 1 << 12) == 0;
 
-    __cpuid(cpuInfo, 7);
+    get_cpuid(cpuInfo, 7);
 
     // Check AVX2 support
     if ((cpuInfo[1] & 1 << 5) != 0) {
@@ -77,14 +83,14 @@ vx::simd::simd_level vx::simd::getFastestSupportedLevel() {
 
 bool vx::simd::checkLevelIsSupported(vx::simd::simd_level checkLevel) {
     int cpuInfo[4];
-    __cpuid(cpuInfo, 0);
+    get_cpuid(cpuInfo, 0);
     int funcNums = cpuInfo[0];
 
     if (funcNums < 1) {
         return checkLevel == vx::simd::simd_level::Fallback;
     }
 
-    __cpuid(cpuInfo, 1);
+    get_cpuid(cpuInfo, 1);
 
     // If SSE2 isn't supported then use Fallback...
     if ((cpuInfo[3] & (1 << 25)) != 0) {
@@ -125,7 +131,7 @@ bool vx::simd::checkLevelIsSupported(vx::simd::simd_level checkLevel) {
     // FMA3
     bool fma3Support = (cpuInfo[2] & 1 << 12) == 0;
 
-    __cpuid(cpuInfo, 7);
+    get_cpuid(cpuInfo, 7);
 
     // Check AVX2 support
     if ((cpuInfo[1] & 1 << 5) != 0) {

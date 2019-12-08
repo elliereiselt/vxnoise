@@ -9,6 +9,14 @@
 #include "SimplexAVX2.hpp"
 #include "SimplexFractalAVX2.hpp"
 
+vx::noise::SimplexFractalAVX2::SimplexFractalAVX2(int seed, float defaultScale, std::uint32_t octaves,
+                                                  float persistence, float lacunarity)
+        : SimplexFractal(seed, defaultScale, octaves, persistence, lacunarity),
+          NoiseAVX2(seed, defaultScale), _avx2Persistence(_mm256_set1_ps(persistence)),
+          _avx2Lacunarity(_mm256_set1_ps(lacunarity)) {
+
+}
+
 __m256 VX_VECTORCALL vx::noise::SimplexFractalAVX2::avx2Get2d(__m256 x, __m256 y, __m256 scale) {
     __m256 frequency = _mm256_set1_ps(1);
     __m256 amplitude = _mm256_set1_ps(1);
